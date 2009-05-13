@@ -88,8 +88,21 @@ class Redis(object):
         >>> r.get('b')
         '105.2'
         >>> 
+        >>> r['l4'] = [1, 2, 3]
+        >>> r.lrange('l4', 0, -1)
+        ['1', '2', '3']
+        >>> r['s4'] = set([9, 8, 7])
+        >>> r.smembers('s4')
+        set(['9', '8', '7'])
         """
-        return self.set(name, value)
+        if isinstance(value, list):
+            for item in value:
+                self.push(name, item)
+        elif isinstance(value, set):
+            for item in value:
+                self.sadd(name, item)
+        else:
+            return self.set(name, value)
 
     def __delitem__(self, name):
         """
