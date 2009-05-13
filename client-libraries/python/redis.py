@@ -40,6 +40,64 @@ class Redis(object):
         self._sock = None
         self._fp = None
         self.db = db
+
+    def __getitem__(self, name):
+        """
+        >>> r = Redis(db=9)
+        >>> r.set('a', 'pippo'), r.set('b', 15), r.set('c', ' \\r\\naaa\\nbbb\\r\\ncccc\\nddd\\r\\n '), r.set('d', '\\r\\n')
+        ('OK', 'OK', 'OK', 'OK')
+        >>> r['a']
+        'pippo'
+        >>> r['b']
+        '15'
+        >>> r['d']
+        '\\r\\n'
+        >>> r['b']
+        '15'
+        >>> r['c']
+        ' \\r\\naaa\\nbbb\\r\\ncccc\\nddd\\r\\n '
+        >>> r['c']
+        ' \\r\\naaa\\nbbb\\r\\ncccc\\nddd\\r\\n '
+        >>> r['ajhsd']
+        >>> 
+        """
+        return self.get(name)
+
+    def __setitem__(self, name, value):
+        """
+        >>> r = Redis(db=9)
+        >>> r['a'] = 'pippo'
+        >>> r.get('a')
+        'pippo'
+        >>> try:
+        ...     r['a'] = u'pippo \u3235'
+        ... except InvalidData, e:
+        ...     print e
+        Error encoding unicode value for key 'a': 'ascii' codec can't encode character u'\u3235' in position 15: ordinal not in range(128).
+        >>> r['b'] = 105.2
+        >>> r.get('b')
+        '105.2'
+        >>> r.set('b', 'xxx', preserve=True)
+        0
+        >>> r.get('b')
+        '105.2'
+        >>> 
+        """
+        return self.set(name, value)
+
+    def __delitem__(self, name):
+        """
+        >>> r = Redis(db=9)
+        >>> del r['dsjhfksjdhfkdsjfh']
+        >>> r.set('a', 'a')
+        'OK'
+        >>> del r['a']
+        >>> r.exists('a')
+        0
+        >>> del r['a']
+        >>> 
+        """
+        return self.delete(name)
         
     def _write(self, s):
         """
