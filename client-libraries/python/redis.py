@@ -58,10 +58,16 @@ class Redis(object):
         ' \\r\\naaa\\nbbb\\r\\ncccc\\nddd\\r\\n '
         >>> r['c']
         ' \\r\\naaa\\nbbb\\r\\ncccc\\nddd\\r\\n '
-        >>> r['ajhsd']
-        >>> 
+        >>> try:
+        ...     r['ajhsd']
+        ... except KeyError, e:
+        ...     print e
+        "Key 'ajhsd' not found."
         """
-        return self.get(name)
+        res = self.get(name)
+        if res is None:
+            raise KeyError("Key '%s' not found." % name)
+        return res
 
     def __setitem__(self, name, value):
         """
@@ -88,16 +94,26 @@ class Redis(object):
     def __delitem__(self, name):
         """
         >>> r = Redis(db=9)
-        >>> del r['dsjhfksjdhfkdsjfh']
+        >>> try:
+        ...     del r['dsjhfksjdhfkdsjfh']
+        ... except KeyError, e:
+        ...     print e
+        "Key 'dsjhfksjdhfkdsjfh' not found."
         >>> r.set('a', 'a')
         'OK'
         >>> del r['a']
         >>> r.exists('a')
         0
-        >>> del r['a']
-        >>> 
+        >>> try:
+        ...     del r['a']
+        ... except KeyError, e:
+        ...     print e
+        "Key 'a' not found."
         """
-        return self.delete(name)
+        res = self.delete(name)
+        if res is 0:
+            raise KeyError("Key '%s' not found." % name)
+        return res
         
     def _write(self, s):
         """
